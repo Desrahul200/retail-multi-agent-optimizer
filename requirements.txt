@@ -1,0 +1,9 @@
+pandas
+numpy
+matplotlib
+prophet 
+scikit-learn 
+umap-learn 
+langgraph
+langchain
+redis 
