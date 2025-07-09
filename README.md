@@ -80,16 +80,6 @@ flowchart LR
 
 ---
 
-## ⚙️ Key design choices
-
-- **Log-log pricing model:** always-positive demand, interpretable elasticities.
-- **Dynamic price grid per SKU:** no more “$10 or $50” edge artefacts.
-- **Weekly aggregation of dunnhumby data:** smooths noise, keeps seasonal signal.
-- **Dynamic inventory policy:** reorder point and quantity scale with demand.
-- **Optimizer shares models:** so you can stress-test promotion strategies and inventory policies with consistent logic.
-
----
-
 ## 🗺️ Roadmap ideas
 
 - Plug in Bayesian bandits (Thompson Sampling / UCB) for adaptive pricing.
