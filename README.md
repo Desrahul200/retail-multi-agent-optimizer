@@ -7,18 +7,18 @@
 
 ---
 
-## ✨ What’s inside?
+## ✨  What’s inside?
 
-| Layer                | File / Folder             | Purpose                                                                                      |
-|----------------------|--------------------------|----------------------------------------------------------------------------------------------|
-| **Data ETL**         | `dunnhumby_etl.py`        | Converts raw dunnhumby `transaction_data.csv` & `product.csv` to `dh_demand.csv` (weekly demand, price, promo flag, competitor price, stock level). |
-| **Agents (LangGraph)** | `multi_agent_graph.py`  | Five interconnected agents:<br>• CustomerBehaviorAgent (UMAP + K-Means)<br>• DemandAgent (Prophet forecast)<br>• PricingAgent (log-log elasticity, revenue maximisation, dynamic price grid)<br>• InventoryAgent (discrete reorder simulation, dynamic reorder point)<br>• *Optimizer* (30-day “what-if” loop)<br>Compiled to a single `graph` object. |
-| **Dashboard**        | `dashboard_app.py`        | Streamlit UI: sidebar scenario controls ➜ run graph ➜ render five tabs (Forecast · Pricing · Inventory · Optimizer · Customers). |
-| **Synthetic generator** *(optional)* | `generate_synthetic.py` | Creates `synthetic_demand.csv` (1 yr × 10 products) for quick demos.                         |
-| **Env**              | `requirements.txt`        | Core libs: `prophet`, `scikit-learn`, `umap-learn`, `langgraph`, `streamlit`, `plotly`, …   |
+| Layer | File / folder | Purpose |
+|-------|---------------|---------|
+| **Data ETL** | `dunnhumby_etl.py` | Turns dunnhumby **transaction** & **product** CSVs into `dh_demand.csv` (weekly demand, price, promo flag, competitor price & on-hand stock). |
+| **Agents**  | `graphs/` <br/>├─ `customer.py` (UMAP + K-Means)<br/>├─ `forecast.py` (Prophet)<br/>├─ `pricing.py` (Log-elasticity + optional Thompson-Sampling)<br/>├─ `inventory.py` (Re-order sim)<br/>└─ `scenario.py` (30-day optimiser loop) | Each file is a self-contained agent. `retail_graph.py` wires them into a LangGraph DAG that passes a shared **state dict** from node → node. |
+| **Dashboard** | `dashboard_app.py` | Streamlit dark-theme UI with five tabs: **Forecast · Pricing · Inventory · Optimizer · Customers**. Sidebar sliders let you override price, force promos or tweak competitor price and see the impact instantly. |
+| **Evaluation** | `evaluate_prophet.py` | Quick hold-out evaluation (MAE / RMSE / MAPE) for Prophet vs naïve baselines & variant tweaks. |
+| **Synthetic demo** *(optional)* | `generate_synthetic.py` | Creates `synthetic_demand.csv` (10 SKUs × 365 days) so you can try the tool without downloading dunnhumby. |
+| **Env** | `requirements.txt` | Core libs: `prophet`, `scikit-learn`, `umap-learn`, `langgraph`, `streamlit`, `plotly`, … |
 
 ---
-
 ## 🔧 Setup
 
 ```bash
@@ -64,15 +64,15 @@ streamlit run dashboard_app.py
 ```mermaid
 flowchart LR
     subgraph LangGraph
-        A["CustomerBehavior\n(UMAP+KMeans)"]
-        B["Demand\n(Prophet)"]
-        C["Pricing\n(Log-Elasticity)"]
-        D["Inventory\n(Reorder sim)"]
-        E["Optimizer\n(30-day loop)"]
+        A["CustomerBehaviour<br/>(UMAP + K-Means)"]
+        B["Demand<br/>(Prophet)"]
+        C["Pricing<br/>(Log elasticity ± Bandit)"]
+        D["Inventory<br/>(s,S sim)"]
+        E["Optimizer<br/>(30-day loop)"]
         A --> B --> C --> D --> E
     end
-    Streamlit -->|"invoke graph"| LangGraph
-    LangGraph -->|"state dict"| Streamlit
+    Streamlit -->|invoke graph| LangGraph
+    LangGraph -->|state dict| Streamlit
 ```
 
 - State is threaded through the graph as a Python dict; each node reads/writes its own keys.
@@ -82,7 +82,6 @@ flowchart LR
 
 ## 🗺️ Roadmap ideas
 
-- Plug in Bayesian bandits (Thompson Sampling / UCB) for adaptive pricing.
 - Track service-level KPIs (fill-rate, stock-out %, lost sales) inside the optimizer loop.
 - Swap Prophet for an LSTM / XGBoost time-series model.
 - Persist results to a Redis channel and stream live to the dashboard. *(Redis is listed in requirements for future features, but is not yet used in the current code.)*
